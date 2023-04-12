@@ -11,8 +11,8 @@ const HISTORY_LENGTH := 20
 # Count of replies currently stored in the chat history
 var reply_count := 0
 
-onready var chat_log: RichTextLabel = $ScrollContainer/ChatLog
-onready var line_edit: LineEdit = $HBoxContainer/LineEdit
+@onready var chat_log: RichTextLabel = $ScrollContainer/ChatLog
+@onready var line_edit: LineEdit = $HBoxContainer/LineEdit
 
 
 func _init() -> void:
