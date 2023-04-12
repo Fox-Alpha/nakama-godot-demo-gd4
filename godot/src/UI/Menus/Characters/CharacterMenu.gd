@@ -20,8 +20,8 @@ func setup(characters: Array, last_played_character: Dictionary) -> void:
 		self.menu_current = character_creator
 
 
-func add_character(name: String, color: Color) -> void:
-	character_selector.character_list.add_character(name, color)
+func add_character(plyname: String, color: Color) -> void:
+	character_selector.character_list.add_character(plyname, color)
 
 
 func delete_character(index: int) -> void:
@@ -36,12 +36,12 @@ func _on_CharacterSelector_create_pressed() -> void:
 	self.menu_current = character_creator
 
 
-func _on_CharacterSelector_login_pressed(name: String, color: Color) -> void:
-	emit_signal("character_selected", name, color)
+func _on_CharacterSelector_login_pressed(plyname: String, color: Color) -> void:
+	emit_signal("character_selected", plyname, color)
 
 
-func _on_CharacterCreator_new_character_requested(name: String, color: Color) -> void:
-	emit_signal("new_character_requested", name, color)
+func _on_CharacterCreator_new_character_requested(plyname: String, color: Color) -> void:
+	emit_signal("new_character_requested", plyname, color)
 	self.menu_current = character_selector
 
 

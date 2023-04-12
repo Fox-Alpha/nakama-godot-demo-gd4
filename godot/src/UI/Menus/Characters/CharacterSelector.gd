@@ -56,5 +56,5 @@ func _on_CharacterList_requested_deletion(character_index) -> void:
 	self.is_enabled = true
 
 
-func _on_CharacterList_character_selected(name: String, color: Color) -> void:
-	emit_signal("login_pressed", name, color)
+func _on_CharacterList_character_selected(plyname: String, color: Color) -> void:
+	emit_signal("login_pressed", plyname, color)

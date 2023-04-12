@@ -2,9 +2,9 @@
 
 [ext_resource type="Theme" path="res://assets/theme/gdquest.theme" id="1"]
 [ext_resource type="PackedScene" path="res://src/UI/Elements/Button.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://src/UI/Elements/Title.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://ddkg4ng8p83o7" path="res://src/UI/Elements/Title.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://src/UI/Components/ColorSelector.tscn" id="4"]
-[ext_resource type="Texture2D" path="res://assets/world/character.svg" id="5"]
+[ext_resource type="Texture2D" uid="uid://bfj32m8uomkh0" path="res://assets/world/character.svg" id="5"]
 [ext_resource type="Script" path="res://src/UI/Menus/Characters/CharacterColorPreview.gd" id="6"]
 [ext_resource type="Script" path="res://src/UI/Menus/Characters/CharacterCreator.gd" id="7"]
 
@@ -39,10 +39,6 @@ alignment = 1
 
 [node name="ColorSelector" parent="VBoxContainer/Color" instance=ExtResource("4")]
 layout_mode = 2
-margin_left = 80.0
-margin_top = 0.0
-margin_right = 624.0
-margin_bottom = 304.0
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
 layout_mode = 2

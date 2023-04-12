@@ -1,13 +1,13 @@
-tool
+@tool
 extends LineEditValidate
 
-export var password_field_path: NodePath setget set_password_field_path
+@export var password_field_path: NodePath : set = set_password_field_path
 
 var password_field: LineEdit
 
 
 func _ready() -> void:
-	yield(self, "ready")
+	await self.ready
 	password_field = get_node(password_field_path)
 	if not password_field:
 		printerr("%s: Missing Password Field Path NodePath" % [get_path()])
