@@ -6,8 +6,8 @@ signal character_deletion_requested(index)
 signal character_selected(name, color)
 signal go_back_requested
 
-onready var character_selector := $CharacterSelector
-onready var character_creator := $CharacterCreator
+@onready var character_selector := $CharacterSelector
+@onready var character_creator := $CharacterCreator
 
 
 func _ready() -> void:
@@ -16,7 +16,7 @@ func _ready() -> void:
 
 func setup(characters: Array, last_played_character: Dictionary) -> void:
 	character_selector.setup(characters, last_played_character)
-	if not characters:
+	if characters.size() > 0:
 		self.menu_current = character_creator
 
 
