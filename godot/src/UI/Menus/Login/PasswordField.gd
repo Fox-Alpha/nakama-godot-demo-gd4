@@ -1,5 +1,5 @@
 extends LineEditValidate
 
 
-func _validate(text: String) -> bool:
-	return text.length() >= 8
+func _validate(intext: String) -> bool:
+	return intext.length() >= 8

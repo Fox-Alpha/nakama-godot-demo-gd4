@@ -6,7 +6,7 @@ extends LineEdit
 var focus_normal: StyleBoxFlat = preload("res://assets/theme/stylebox/button_focused.tres")
 var focus_error: StyleBoxFlat = preload("res://assets/theme/stylebox/button_focused_error.tres")
 
-var is_valid := true setget set_is_valid
+var is_valid = true : set = set_is_valid
 
 
 # Returns `true` if the text input is valid.

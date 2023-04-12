@@ -4,28 +4,29 @@ extends Menu
 signal register_pressed
 signal login_pressed(email, password, do_remember_email)
 
-onready var remember_email := $RememberEmail
+@onready var remember_email := $VBoxContainer/RememberEmail
 
-onready var email_field := $Email/LineEditValidate
-onready var password_field := $Password/LineEditValidate
-onready var login_button := $HBoxContainer/LoginButton
-onready var register_button := $HBoxContainer/RegisterButton
+@onready var email_field := $VBoxContainer/Email/LineEditValidate
+@onready var password_field := $VBoxContainer/Password/LineEditValidate
+@onready var login_button := $VBoxContainer/HBoxContainer/LoginButton
+@onready var register_button := $VBoxContainer/HBoxContainer/RegisterButton
 
-onready var status_panel := $StatusPanel
+@onready var status_panel := $VBoxContainer/StatusPanel
+#$VBoxContainer/StatusPanel
 
 
 func _ready() -> void:
 	email_field.text = ServerConnection.get_last_email()
-	if not email_field.text.empty():
-		remember_email.pressed = true
+	if not email_field.text.is_empty():
+		remember_email.button_pressed = true
 
 	email_field.grab_focus()
 
 
 func set_is_enabled(value: bool) -> void:
-	.set_is_enabled(value)
+	super.set_is_enabled(value)
 	if not email_field:
-		yield(self, "ready")
+		await self.ready
 	email_field.editable = is_enabled
 	password_field.editable = is_enabled
 	remember_email.disabled = not is_enabled
@@ -34,12 +35,12 @@ func set_is_enabled(value: bool) -> void:
 
 
 func set_status(text: String) -> void:
-	.set_status(text)
+	super.set_status(text)
 	status_panel.text = text
 
 
 func reset() -> void:
-	.reset()
+	super.reset()
 	self.status = ""
 	password_field.text = ""
 	if not remember_email.pressed:
@@ -57,7 +58,8 @@ func attempt_login() -> void:
 		status_panel.text = "The password should be at least 8 characters long"
 		return
 
-	emit_signal("login_pressed", email_field.text, password_field.text, remember_email.pressed)
+	emit_signal("login_pressed", email_field.text, password_field.text, remember_email.button_pressed)
+	#print(login_pressed.get_connections())
 	status_panel.text = "Authenticating..."
 
 
