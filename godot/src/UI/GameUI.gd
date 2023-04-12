@@ -8,10 +8,10 @@ signal chat_edit_started
 signal chat_edit_ended
 signal logged_out
 
-onready var color_editor := $CharacterColorEditor
-onready var chat_box := $HBoxContainer/ChatBox
-onready var toggle_chat_button := $HBoxContainer/ToggleChatButton
-onready var notifications_ui := $NotificationsUI
+@onready var color_editor := $CharacterColorEditor
+@onready var chat_box := $HBoxContainer/ChatBox
+@onready var toggle_chat_button := $HBoxContainer/ToggleChatButton
+@onready var notifications_ui := $NotificationsUI
 
 
 func _gui_input(event: InputEvent) -> void:
