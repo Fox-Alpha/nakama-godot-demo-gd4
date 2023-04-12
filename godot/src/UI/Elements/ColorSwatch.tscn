@@ -1,28 +1,15 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://dov33m2icskp4"]
 
-[ext_resource path="res://src/UI/Elements/ColorSwatch.gd" type="Script" id=1]
-[ext_resource path="res://assets/theme/gdquest.theme" type="Theme" id=2]
+[ext_resource type="Script" path="res://src/UI/Elements/ColorSwatch.gd" id="1"]
+[ext_resource type="Theme" path="res://assets/theme/gdquest.theme" id="2"]
 
 [node name="ColorSwatch" type="Button"]
-margin_right = 64.0
-margin_bottom = 64.0
-rect_min_size = Vector2( 64, 64 )
-theme = ExtResource( 2 )
+theme = ExtResource("2")
 flat = true
-script = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
-color = null
+script = ExtResource("1")
 
 [node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 8.0
-margin_top = 8.0
-margin_right = -8.0
-margin_bottom = -8.0
 mouse_filter = 2
-__meta__ = {
-"_edit_use_anchors_": false
-}
