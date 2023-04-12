@@ -17,10 +17,10 @@ func _get_configuration_warning() -> String:
 	return "You must set the Password Field" if not password_field else ""
 
 
-func _validate(text: String) -> bool:
+func _validate(intext: String) -> bool:
 	if not password_field:
 		return false
-	return password_field.text == text
+	return password_field.text == intext
 
 
 func set_password_field_path(value: NodePath) -> void:
