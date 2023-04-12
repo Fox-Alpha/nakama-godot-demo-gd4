@@ -1,7 +1,8 @@
 # Class that ServerConnection delegates work to. Stores and fetches data in and out
 # of server storage - namely, character listing and color data.
 class_name StorageWorker
-extends Reference
+extends RefCounted
+#extends Reference
 
 # Nakama read permissions
 enum ReadPermissions { NO_READ, OWNER_READ, PUBLIC_READ }
@@ -37,11 +38,9 @@ func _init(session: NakamaSession, client: NakamaClient, exception_handler: Exce
 # Returns an Array of {name: String, color: Color} dictionaries.
 # Returns an empty array if there is a failure or if no characters are found.
 func get_player_characters_async() -> Array:
-	var storage_objects: NakamaAPI.ApiStorageObjects = yield(
+	var storage_objects: NakamaAPI.ApiStorageObjects = await \
 		_client.read_storage_objects_async(
 			_session, [NakamaStorageObjectId.new(COLLECTION, KEY_CHARACTERS, _session.user_id)]
-		),
-		"completed"
 	)
 
 	var parsed_result := _exception_handler.parse_exception(storage_objects)
@@ -50,7 +49,7 @@ func get_player_characters_async() -> Array:
 
 	var characters := []
 	if storage_objects.objects.size() > 0:
-		var decoded: Array = JSON.parse(storage_objects.objects[0].value).result.characters
+		var decoded: Array = JSON.parse_string(storage_objects.objects[0].value).result.characters
 		for character in decoded:
 			var name: String = character.name
 			characters.append(
@@ -65,9 +64,8 @@ func get_player_characters_async() -> Array:
 # Returns OK when successful, a nakama error code, or ERR_UNAVAILABLE if the name
 # is already taken.
 func create_player_character_async(color: Color, name: String) -> int:
-	var availability_response: NakamaAPI.ApiRpc = yield(
-		_client.rpc_async(_session, "register_character_name", name), "completed"
-	)
+	var availability_response: NakamaAPI.ApiRpc = await \
+		_client.rpc_async(_session, "register_character_name", name)
 
 	var parsed_result := _exception_handler.parse_exception(availability_response)
 	if parsed_result != OK:
@@ -75,9 +73,9 @@ func create_player_character_async(color: Color, name: String) -> int:
 
 	var is_available := availability_response.payload == "1"
 	if is_available:
-		var characters: Array = yield(get_player_characters_async(), "completed")
-		characters.append({name = name, color = JSON.print(color)})
-		var result: int = yield(_write_player_characters_async(characters), "completed")
+		var characters: Array = await get_player_characters_async()
+		characters.append({name = name, color = JSON.stringify(color)})
+		var result: int = await _write_player_characters_async(characters)
 		return result
 	else:
 		return ERR_UNAVAILABLE
@@ -86,19 +84,19 @@ func create_player_character_async(color: Color, name: String) -> int:
 # Update the character's color in storage with the repalcement color.
 # Returns OK, or a nakama error code.
 func update_player_character_async(color: Color, name: String) -> int:
-	var characters: Array = yield(get_player_characters_async(), "completed")
+	var characters: Array = await get_player_characters_async()
 
 	var do_update := false
 	for i in range(characters.size()):
 		if characters[i].name == name:
-			characters[i].color = JSON.print(color)
+			characters[i].color = JSON.stringify(color)
 			do_update = true
 			break
 
 	if do_update:
-		var result: int = yield(_write_player_characters_async(characters), "completed")
+		var result: int = await _write_player_characters_async(characters)
 		if result == OK:
-			result = yield(store_last_player_character_async(name, color), "completed")
+			result = await store_last_player_character_async(name, color)
 		return result
 	else:
 		return OK
@@ -108,14 +106,14 @@ func update_player_character_async(color: Color, name: String) -> int:
 # player storage. Returns OK, a nakama error code, or ERR_PARAMETER_RANGE_ERROR
 # if the index is too large or is invalid.
 func delete_player_character_async(idx: int) -> int:
-	var characters: Array = yield(get_player_characters_async(), "completed")
+	var characters: Array = await get_player_characters_async()
 
 	if idx >= 0 and idx < characters.size():
 		var character: Dictionary = characters[idx]
-		yield(_client.rpc_async(_session, "remove_character_name", character.name), "completed")
-		characters.remove(idx)
+		await _client.rpc_async(_session, "remove_character_name", character.name)
+		characters.erase(idx)
 
-		var result: int = yield(_write_player_characters_async(characters), "completed")
+		var result: int = await _write_player_characters_async(characters)
 		return result
 	else:
 		return ERR_PARAMETER_RANGE_ERROR
@@ -125,23 +123,21 @@ func delete_player_character_async(idx: int) -> int:
 # Returns a {name: String, color: Color} dictionary, or an empty dictionary if no
 # character is found, or something goes wrong.
 func get_last_player_character_async() -> Dictionary:
-	var storage_objects: NakamaAPI.ApiStorageObjects = yield(
+	var storage_objects: NakamaAPI.ApiStorageObjects = await \
 		_client.read_storage_objects_async(
 			_session, [NakamaStorageObjectId.new(COLLECTION, KEY_LAST_CHARACTER, _session.user_id)]
-		),
-		"completed"
-	)
+		)
 
 	var parsed_result := _exception_handler.parse_exception(storage_objects)
 	var character := {}
 	if parsed_result != OK or storage_objects.objects.size() == 0:
 		return character
 
-	var decoded: Dictionary = JSON.parse(storage_objects.objects[0].value).result
+	var decoded: Dictionary = JSON.parse_string(storage_objects.objects[0].value).result
 	character["name"] = decoded.name
 	character["color"] = Converter.color_string_to_color(decoded.color)
 
-	var characters: Array = yield(get_player_characters_async(), "completed")
+	var characters: Array = await get_player_characters_async()
 	for c in characters:
 		if c.name == character["name"]:
 			return character
@@ -151,8 +147,8 @@ func get_last_player_character_async() -> Dictionary:
 # Asynchronous coroutine. Put the last logged in character into player storage on the server.
 # Returns OK, or a nakama error code.
 func store_last_player_character_async(name: String, color: Color) -> int:
-	var character := {name = name, color = JSON.print(color)}
-	var result: NakamaAPI.ApiStorageObjectAcks = yield(
+	var character := {name = name, color = JSON.stringify(color)}
+	var result: NakamaAPI.ApiStorageObjectAcks = await \
 		_client.write_storage_objects_async(
 			_session,
 			[
@@ -161,13 +157,11 @@ func store_last_player_character_async(name: String, color: Color) -> int:
 					KEY_LAST_CHARACTER,
 					ReadPermissions.OWNER_READ,
 					WritePermissions.OWNER_WRITE,
-					JSON.print(character),
+					JSON.stringify(character),
 					""
 				)
 			]
-		),
-		"completed"
-	)
+		)
 	var parsed_result := _exception_handler.parse_exception(result)
 	return parsed_result
 
@@ -175,7 +169,7 @@ func store_last_player_character_async(name: String, color: Color) -> int:
 # Asynchronous coroutine. Writes the player's characters into storage on the server.
 # Returns OK or a nakama error code.
 func _write_player_characters_async(characters: Array) -> int:
-	var result: NakamaAPI.ApiStorageObjectAcks = yield(
+	var result: NakamaAPI.ApiStorageObjectAcks = await \
 		_client.write_storage_objects_async(
 			_session,
 			[
@@ -184,13 +178,11 @@ func _write_player_characters_async(characters: Array) -> int:
 					KEY_CHARACTERS,
 					ReadPermissions.OWNER_READ,
 					WritePermissions.OWNER_WRITE,
-					JSON.print({characters = characters}),
+					JSON.stringify({characters = characters}),
 					""
 				)
 			]
-		),
-		"completed"
-	)
+		)
 	var parsed_result := _exception_handler.parse_exception(result)
 	return parsed_result
 

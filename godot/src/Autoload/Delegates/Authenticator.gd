@@ -1,11 +1,12 @@
 # Delegate class that handles logging in and registering accounts. Holds the 
 # authenticated session that ServerConnection uses to send messages or create a socket.
 class_name Authenticator
-extends Reference
+extends RefCounted
+#extends Reference
 
-var session: NakamaSession setget _no_set
-var _client: NakamaClient setget _no_set
-var _exception_handler: ExceptionHandler setget _no_set
+var session: NakamaSession : set = _no_set
+var _client: NakamaClient : set = _no_set
+var _exception_handler: ExceptionHandler : set = _no_set
 
 
 func _init(client: NakamaClient, exception_handler: ExceptionHandler) -> void:
@@ -17,9 +18,8 @@ func _init(client: NakamaClient, exception_handler: ExceptionHandler) -> void:
 # creates a new account when it did not previously exist, then initializes session.
 # Returns OK or a nakama error code. Stores error messages in `ServerConnection.error_message`
 func register_async(email: String, password: String) -> int:
-	var new_session: NakamaSession = yield(
-		_client.authenticate_email_async(email, password, email, true), "completed"
-	)
+	var new_session: NakamaSession = await \
+		_client.authenticate_email_async(email, password, email, true)
 
 	var parsed_result := _exception_handler.parse_exception(new_session)
 	if parsed_result == OK:
@@ -41,16 +41,15 @@ func register_async(email: String, password: String) -> int:
 func login_async(email: String, password: String) -> int:
 	var token := SessionFileWorker.recover_session_token(email, password)
 	if token != "":
-		var new_session: NakamaSession = _client.restore_session(token)
+		var new_session: NakamaSession = SessionFileWorker.restore_session(token)
 		if new_session.valid and not new_session.expired:
 			session = new_session
-			yield(Engine.get_main_loop(), "idle_frame")
+			await Engine.get_main_loop().process_frame # , "idle_frame")
 			return OK
 
 	# If previous session is unavailable, invalid or expired
-	var new_session: NakamaSession = yield(
-		_client.authenticate_email_async(email, password, null, false), "completed"
-	)
+	var new_session: NakamaSession = await \
+		_client.authenticate_email_async(email, password, null, false)
 	var parsed_result := _exception_handler.parse_exception(new_session)
 	if parsed_result == OK:
 		session = new_session
@@ -74,10 +73,7 @@ class SessionFileWorker:
 
 	# Write an encrypted file containing the email and token.
 	static func write_auth_token(email: String, token: String, password: String) -> void:
-		var file := File.new()
-
-		#warning-ignore: return_value_discarded
-		file.open_encrypted_with_pass(AUTH, File.WRITE, password)
+		var file := FileAccess.open_encrypted_with_pass(AUTH, FileAccess.WRITE, password)
 
 		file.store_line(email)
 		file.store_line(token)
@@ -90,13 +86,13 @@ class SessionFileWorker:
 	# If another user tries to log in instead, the encryption will fail to read, or the
 	# email will not match in the rare case passwords do.
 	static func recover_session_token(email: String, password: String) -> String:
-		var file := File.new()
-		var error := file.open_encrypted_with_pass(AUTH, File.READ, password)
+#		var file := File.new()
+		var error := FileAccess.open_encrypted_with_pass(AUTH, FileAccess.READ, password)
 
-		if error == OK:
-			var auth_email := file.get_line()
-			var auth_token := file.get_line()
-			file.close()
+		if error:
+			var auth_email := error.get_line()
+			var auth_token := error.get_line()
+			error = null
 
 			if auth_email == email:
 				return auth_token
