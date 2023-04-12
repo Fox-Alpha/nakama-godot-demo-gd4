@@ -134,7 +134,7 @@ func connect_to_server_async() -> int:
 		#warning-ignore: return_value_discarded
 		_socket.connect("received_match_state", _on_NakamaSocket_received_match_state)
 		#warning-ignore: return_value_discarded
-		_socket.connect("received_channel_message", _on_NamakaSocket_received_channel_message)
+		_socket.connect("received_channel_message", _on_NakamaSocket_received_channel_message)
 
 	return parsed_result
 
@@ -415,7 +415,7 @@ func _on_NakamaSocket_received_match_state(match_state: NakamaRTAPI.MatchData) -
 
 
 # Called when the server received a new chat message.
-func _on_NamakaSocket_received_channel_message(message: NakamaAPI.ApiChannelMessage) -> void:
+func _on_NakamaSocket_received_channel_message(message: NakamaAPI.ApiChannelMessage) -> void:
 	if message.code != 0:
 		return
 
