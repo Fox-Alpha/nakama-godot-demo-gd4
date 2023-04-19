@@ -12,8 +12,8 @@ const MAX_REQUEST_ATTEMPTS := 3
 var _server_request_attempts := 0
 
 #@onready var login_and_register := $CanvasLayer/LoginAndRegister
-@onready var login_and_register := $"CanvasLayer@LoginAndRegister"
-@onready var character_menu := $"CanvasLayer@CharacterMenu"
+@onready var login_and_register := $"CanvasLayer/LoginAndRegister"
+@onready var character_menu := $"CanvasLayer/CharacterMenu"
 
 
 # Requests the server to authenticate the player using their credentials.
